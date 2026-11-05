@@ -1,0 +1,409 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   1. Web UI Font Declarations (Prompt & Kanit - 100% Offline Local Assets)
+   ========================================================================== */
+
+/* Prompt (Body, Navigation, Forms, Inputs, Buttons) */
+@font-face {
+  font-family: 'Prompt';
+  src: url('/fonts/Prompt-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Prompt';
+  src: url('/fonts/Prompt-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Prompt';
+  src: url('/fonts/Prompt-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Prompt';
+  src: url('/fonts/Prompt-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Kanit (Headings, Branding, Titles) */
+@font-face {
+  font-family: 'Kanit';
+  src: url('/fonts/Kanit-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kanit';
+  src: url('/fonts/Kanit-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kanit';
+  src: url('/fonts/Kanit-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ==========================================================================
+   2. Thai Government Font Declarations (@font-face - Export Templates ONLY)
+   ========================================================================== */
+
+/* TH Sarabun PSK */
+@font-face {
+  font-family: 'TH Sarabun PSK';
+  src: url('/fonts/THSarabun.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun PSK';
+  src: url('/fonts/THSarabun Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun PSK';
+  src: url('/fonts/THSarabun Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun PSK';
+  src: url('/fonts/THSarabun Bold Italic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* TH Sarabun New */
+@font-face {
+  font-family: 'TH Sarabun New';
+  src: url('/fonts/THSarabunNew.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun New';
+  src: url('/fonts/THSarabunNew Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun New';
+  src: url('/fonts/THSarabunNew Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun New';
+  src: url('/fonts/THSarabunNew BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Aliases for template compatibility */
+@font-face {
+  font-family: 'THSarabunPSK';
+  src: url('/fonts/THSarabun.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'THSarabunPSK';
+  src: url('/fonts/THSarabun Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun';
+  src: url('/fonts/THSarabun.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TH Sarabun';
+  src: url('/fonts/THSarabun Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ==========================================================================
+   3. Root Typography & Baseline Variables (Fluid Responsive)
+   ========================================================================== */
+:root {
+  --font-prompt: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-kanit: 'Kanit', 'Prompt', sans-serif;
+  --font-sarabun: 'TH Sarabun PSK', 'THSarabunPSK', 'TH Sarabun New', 'THSarabunNew', 'TH Sarabun', 'Sarabun', sans-serif;
+
+  /* Fluid Responsive Typography Tokens (Mobile to Desktop) */
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem);
+  --font-size-sm: clamp(0.8125rem, 0.76rem + 0.25vw, 0.875rem);
+  --font-size-label: clamp(0.875rem, 0.82rem + 0.25vw, 0.9375rem);
+  --font-size-base: clamp(0.9375rem, 0.875rem + 0.3vw, 1.0625rem);
+  --font-size-lg: clamp(1.0625rem, 1rem + 0.35vw, 1.1875rem);
+  --font-size-xl: clamp(1.25rem, 1.125rem + 0.5vw, 1.4375rem);
+  --font-size-2xl: clamp(1.4375rem, 1.25rem + 0.8vw, 1.75rem);
+  --font-size-3xl: clamp(1.6875rem, 1.45rem + 1vw, 2.125rem);
+}
+
+html,
+body {
+  font-family: var(--font-prompt);
+  font-size: 16px;
+  /* Base 16px to prevent iOS Safari auto-zoom on input focus */
+  line-height: 1.55;
+  /* Open, legible line spacing for Thai script */
+  letter-spacing: -0.01em;
+  color: #1e293b;
+  background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   STRICT SEAM: Thai Government Document Templates Isolation (DO NOT TOUCH)
+   ========================================================================== */
+.thai-gov-doc,
+.thai-gov-doc * {
+  font-family: 'TH Sarabun PSK', 'THSarabunPSK', 'TH Sarabun New', 'Sarabun', sans-serif !important;
+  font-variant-numeric: normal !important;
+  font-feature-settings: normal !important;
+  line-height: 1.35 !important;
+  letter-spacing: normal !important;
+}
+
+/* Thai distributed text alignment */
+.text-thai-justify {
+  text-align: justify;
+  text-justify: inter-cluster;
+  text-align-last: left;
+}
+
+/* 2.5 cm official first line indent */
+.indent-gov {
+  text-indent: 2.5cm;
+}
+
+/* ==========================================================================
+   3. Mobile Safe Area & Layout Utilities
+   ========================================================================== */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4rem);
+}
+
+.bottom-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Custom scrollbars for data tables and sidebars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================================================
+   4. Print Media Queries & Complete Thai Government Document Specs
+   ========================================================================== */
+
+/* Default A4 Portrait Page with Official Saraban Margins:
+   Top: 2.5 cm (~0.98"), Right: 2.0 cm (~0.78"), Bottom: 1.5-2.0 cm (~0.58"-0.78"), Left: 3.0 cm (~1.18")
+   เรียงตามเข็มนาฬิกา TRBL: บน -> ขวา -> ล่าง -> ซ้าย */
+@page {
+  size: A4 portrait;
+  margin: 0.58in 0.78in 0.58in 1.18in;
+  /* หรือ 25mm 20mm 15mm 30mm */
+  /* ลำดับ CSS (TRBL): บน 0.98" (~25mm), ขวา 0.78" (~20mm), ล่าง 0.58" (~15mm), ซ้าย 1.18" (~30mm) */
+}
+
+@page doc-portrait-gov {
+  size: A4 portrait;
+  margin: 0.58in 0.78in 0.58in 1.18in;
+  /* หรือ 25mm 20mm 15mm 30mm */
+  /* ลำดับ CSS (TRBL): บน 0.98" (~25mm), ขวา 0.78" (~20mm), ล่าง 0.58" (~15mm), ซ้าย 1.18" (~30mm) */
+}
+
+/* Receipt Voucher Page Margins (Left 20mm, Right 15mm, Top 20mm, Bottom 15mm) */
+@page doc-receipt-voucher {
+  size: A4 portrait;
+  margin: 20mm 15mm 15mm 20mm;
+}
+
+/* Workload Matrix: A4 Landscape with 8mm compact margins for 34 columns */
+@page doc-landscape-matrix {
+  size: A4 landscape;
+  margin: 8mm 8mm 8mm 8mm;
+}
+
+/* Attendance Sheet: A4 Portrait with 15mm margins */
+@page doc-attendance-sheet {
+  size: A4 portrait;
+  margin: 15mm 15mm 15mm 15mm;
+}
+
+/* Screen Preview: Fixed A4 Paper Geometry (template fix size) */
+@media screen {
+
+  .page-receipt-voucher,
+  .page-delivery-note,
+  .page-attendance-sheet {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    box-sizing: border-box !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15), 0 2px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #cbd5e1 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .page-workload-matrix {
+    width: 297mm !important;
+    min-height: 210mm !important;
+    box-sizing: border-box !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15), 0 2px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #cbd5e1 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+@media print {
+
+  /* Complete UI Chrome & Navigation Suppression */
+  .no-print,
+  header,
+  nav,
+  aside,
+  .mobile-bottom-nav,
+  .desktop-sidebar,
+  button,
+  .print-suppress {
+    display: none !important;
+  }
+
+  /* Reset body and container geometry for proper browser print rendering */
+  html,
+  body {
+    display: block !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset layout flex/grid containers to normal block flow */
+  body>div,
+  main,
+  main>div,
+  .space-y-4,
+  .space-y-6,
+  .preview-canvas-wrapper,
+  .preview-canvas-wrapper > div,
+  div:has(> .thai-gov-doc) {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  /* Document Containers: Strictly 1 Page Only, Visible Flow */
+  .page-receipt-voucher,
+  .page-delivery-note,
+  .page-attendance-sheet,
+  .page-workload-matrix {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  /* Color accuracy enforcement for table cells (#d3d3d3) and text */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
