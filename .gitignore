@@ -26,14 +26,16 @@ yarn-error.log*
 .env*.local
 
 # vercel
+.vercel/
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
-.env*
 line-bot-mcp.json
-
 supabase/.temp/
+
+# Ignore environment files, but keep the safe template in version control.
+.env*
+!.env.example

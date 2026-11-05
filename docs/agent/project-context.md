@@ -1,104 +1,47 @@
-# Project Context — salary-doc-web
-
-## 🏢 บริบทองค์กร
-
-**หน่วยงาน:** วิทยาลัยนักบริหารสาธารณสุข  
-**สังกัด:** สำนักงานปลัดกระทรวงสาธารณสุข — กระทรวงสาธารณสุข  
-**จังหวัด:** เพชรบุรี  
-**ผู้รับจ้าง (Default):** นาย[ชื่อผู้รับจ้าง] [นามสกุล]  
-**ตำแหน่ง:** จ้างเหมาบริการปฏิบัติงานเครื่องคอมพิวเตอร์
-
+---
+title: Project context
+contentType: Conceptual
+goal: Apply the salary and document rules correctly
+audience: Developers and coding agents
+overview: Business domain, implemented workflows, and calculation invariants
+contentPlan: Define the app domain and rules without recording personal fixtures
+openQuestions: []
 ---
 
-## 📋 ข้อมูลสัญญาตัวอย่าง (Seed Data)
+# Project context
 
-| รายการ | ค่า |
-|---|---|
-| เลขที่สัญญา | 2/2570 (ไทย: ๒/๒๕๗๐) |
-| วันที่ทำสัญญา | 29 ตุลาคม 2569 |
-| วันที่เริ่มต้น | 1 ตุลาคม 2569 |
-| วันที่สิ้นสุด | 30 กันยายน 2570 |
-| ระยะเวลา | 12 เดือน |
-| เงินเดือน | 19,800 บาท/เดือน |
-| มูลค่าสัญญา | 237,600 บาท |
-| อัตราค่าจ้างรายวัน | 660 บาท/วัน (19,800 ÷ 30) |
-| จำนวนชิ้นงาน | 110 ชิ้น/งวด |
+This app prepares salary, contract, attendance, and workload documents for service contractors in Thai public-sector organizations. It stores contractor and contract data, calculates pay by monthly period, and renders documents for printing.
 
----
+## Main workflows
 
-## 🔄 Data Flow หลัก
+1. Sign in with an available email/password or LINE LIFF flow.
+2. Maintain contractor, agency, and contract details.
+3. Select a monthly period and enter holidays or absences.
+4. Calculate pay and workload.
+5. Preview and print the available document types.
+6. Use administration pages to manage members, options, or settings when authorized.
 
-```
-User Input (Forms)
-    ↓
-useSalaryStore (Zustand)
-    ↓                    ↓
-supabaseAdapter      recalculateAll()
-    ↓                    ↓
-Supabase DB        salaryEngine.ts
-    ↓                    ↓
-  persist         distributeWorkload()
-                         ↓
-                   WorkloadResult
-                         ↓
-                   Document Preview
-                  (print-ready HTML)
-```
+The current UI and API routes are the source of truth for implemented behavior. Dated specifications under `docs/superpowers/` describe earlier plans.
 
----
+## Business rules
 
-## 🗓️ งวดการชำระเงิน (Payment Periods)
+| Rule               | Calculation                                               |
+| ------------------ | --------------------------------------------------------- |
+| Daily rate         | Monthly salary divided by 30                              |
+| Deduction          | Absent working days multiplied by daily rate              |
+| Net payable        | Monthly salary minus deduction                            |
+| Contract amount    | Monthly salary multiplied by contract periods             |
+| Workload target    | Defaults to 110 tasks per period                          |
+| Workload matrix    | 18 task rows and up to 31 day columns                     |
+| Non-working days   | Holiday, weekend, or absence cells contain zero workload  |
+| Thai calendar year | Convert Buddhist Era to Gregorian year by subtracting 543 |
 
-- งวดที่ 1: ตุลาคม 2569 (เดือนแรก)
-- งวดที่ 2: พฤศจิกายน 2569
-- ...
-- งวดที่ 12: กันยายน 2570 (เดือนสุดท้าย)
+Use the calculation engine in `src/lib/calculation/` as the implementation source. Do not copy formulas into components.
 
-วันหยุดราชการ (Public Holidays) ที่ใช้เป็น default:
-- วันที่ 13 และ 23 ของเดือนตุลาคม
+## Data sensitivity
 
----
+Contractor records can contain citizen IDs, contact details, addresses, salaries, and bank information. Treat all of these fields as sensitive. The database schema does not implement application-level encryption for these columns.
 
-## 🏦 ข้อมูลธนาคาร (Default)
+## Persistence boundary
 
-| รายการ | ค่า |
-|---|---|
-| ธนาคาร | ธนาคารกรุงไทย |
-| เลขที่บัญชี | 123-4-56789-0 |
-
----
-
-## 📄 กระบวนการทำงานของผู้ใช้ (User Workflow)
-
-```
-1. เข้าสู่ระบบ (Login)
-2. กรอกข้อมูลส่วนตัว (Profile Form)
-3. กรอกข้อมูลหน่วยงาน (Agency Form)
-4. กรอกข้อมูลสัญญา (Contract Form)
-5. เลือกงวดที่ต้องการสร้างเอกสาร
-6. ระบุวันหยุดและวันลา
-7. ระบบคำนวณอัตโนมัติ
-8. ดูตัวอย่างเอกสาร (Preview)
-9. พิมพ์เอกสาร (Print)
-```
-
----
-
-## ⚖️ กฎระเบียบราชการที่เกี่ยวข้อง
-
-1. **อัตราค่าจ้างรายวัน** คำนวณจาก `เงินเดือน ÷ 30` (ไม่ใช่จำนวนวันจริง)
-2. **การหักเงิน** ทำเฉพาะวันทำงานที่ขาด ไม่นับวันหยุดราชการ
-3. **ตัวเลขไทย** ใช้ในเอกสาร DOC-01 (ใบส่งมอบงาน)
-4. **ตัวเลขอารบิก** ใช้ในเอกสาร DOC-02 (ใบเสร็จรับเงิน)
-5. **ภาระงาน** ต้องกระจายเฉพาะวันทำงาน เซลล์วันหยุดต้องเป็น 0
-
----
-
-## 🔐 ความปลอดภัยของข้อมูล
-
-| ข้อมูล | ระดับความลับ | วิธีจัดการ |
-|---|---|---|
-| citizen_id (เลขบัตรฯ) | สูงมาก | ไม่ log, เข้ารหัสใน DB |
-| bank_account_no | สูง | ไม่แสดงเต็ม |
-| monthly_salary | ปานกลาง | เฉพาะผู้มีสิทธิ์เท่านั้น |
-| audit_logs | อ่านอย่างเดียว | immutable — ห้ามแก้ไข |
+The Zustand store uses a Supabase adapter and local storage. The current adapter can return local data after a remote error. Confirm database results before describing a write as durable. See [database setup](../database/schema.md) for the current access limitation and SQL setup.

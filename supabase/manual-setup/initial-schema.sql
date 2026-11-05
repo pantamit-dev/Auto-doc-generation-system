@@ -1,10 +1,8 @@
 -- =============================================================================
--- Supabase Migration: Clean Baseline Schema & System Options (No Mockup Data)
--- Migration Version: 20261105020000_init_clean_schema.sql
--- Description: Production-ready baseline schema for Thai Government Contractor
---              Salary & Document Web System.
---              Includes Dual Auth support (LINE LIFF + Email/Password Supabase Auth),
---              Dynamic System Options, Audit Trails, and strict RLS.
+-- Manual setup script for a new Supabase project.
+-- Run only this file in the Supabase SQL Editor on an empty project.
+-- It creates schema objects only. It inserts no rows and grants no table access
+-- to anon or authenticated. Server-side code uses the service_role key.
 -- =============================================================================
 
 -- 1. EXTENSIONS
@@ -268,7 +266,7 @@ CREATE TRIGGER trg_system_options_updated_at
   BEFORE UPDATE ON public.system_options
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
--- 13. ROW LEVEL SECURITY (RLS) POLICIES
+-- 13. ROW LEVEL SECURITY (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contractors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agencies ENABLE ROW LEVEL SECURITY;
@@ -278,153 +276,28 @@ ALTER TABLE public.system_options ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- users policies
-DROP POLICY IF EXISTS "users_select_policy" ON public.users;
-CREATE POLICY "users_select_policy" ON public.users
-  FOR SELECT TO anon, authenticated
-  USING (true);
+-- The browser roles receive no table privileges or RLS policies. Application
+-- access must go through authenticated server handlers using service_role.
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC, anon, authenticated;
 
-DROP POLICY IF EXISTS "users_modify_policy" ON public.users;
-CREATE POLICY "users_modify_policy" ON public.users
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
+GRANT USAGE ON SCHEMA public TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON
+  public.users,
+  public.contractors,
+  public.agencies,
+  public.contracts,
+  public.monthly_periods,
+  public.system_options,
+  public.system_settings,
+  public.audit_logs
+TO service_role;
+GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO service_role;
 
--- contractors policies
-DROP POLICY IF EXISTS "contractors_select_policy" ON public.contractors;
-CREATE POLICY "contractors_select_policy" ON public.contractors
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
-DROP POLICY IF EXISTS "contractors_modify_policy" ON public.contractors;
-CREATE POLICY "contractors_modify_policy" ON public.contractors
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- agencies policies
-DROP POLICY IF EXISTS "agencies_select_policy" ON public.agencies;
-CREATE POLICY "agencies_select_policy" ON public.agencies
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
-DROP POLICY IF EXISTS "agencies_modify_policy" ON public.agencies;
-CREATE POLICY "agencies_modify_policy" ON public.agencies
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- contracts policies
-DROP POLICY IF EXISTS "contracts_select_policy" ON public.contracts;
-CREATE POLICY "contracts_select_policy" ON public.contracts
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
-DROP POLICY IF EXISTS "contracts_modify_policy" ON public.contracts;
-CREATE POLICY "contracts_modify_policy" ON public.contracts
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- monthly_periods policies
-DROP POLICY IF EXISTS "monthly_periods_select_policy" ON public.monthly_periods;
-CREATE POLICY "monthly_periods_select_policy" ON public.monthly_periods
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
-DROP POLICY IF EXISTS "monthly_periods_modify_policy" ON public.monthly_periods;
-CREATE POLICY "monthly_periods_modify_policy" ON public.monthly_periods
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- system_options policies
-DROP POLICY IF EXISTS "system_options_select_policy" ON public.system_options;
-CREATE POLICY "system_options_select_policy" ON public.system_options
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
-DROP POLICY IF EXISTS "system_options_modify_policy" ON public.system_options;
-CREATE POLICY "system_options_modify_policy" ON public.system_options
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- system_settings policies
-DROP POLICY IF EXISTS "system_settings_select_policy" ON public.system_settings;
-CREATE POLICY "system_settings_select_policy" ON public.system_settings
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
-DROP POLICY IF EXISTS "system_settings_modify_policy" ON public.system_settings;
-CREATE POLICY "system_settings_modify_policy" ON public.system_settings
-  FOR ALL TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- audit_logs policies (Immutable append-only)
-DROP POLICY IF EXISTS "audit_logs_select_policy" ON public.audit_logs;
-CREATE POLICY "audit_logs_select_policy" ON public.audit_logs
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
-DROP POLICY IF EXISTS "audit_logs_insert_policy" ON public.audit_logs;
-CREATE POLICY "audit_logs_insert_policy" ON public.audit_logs
-  FOR INSERT TO anon, authenticated
-  WITH CHECK (true);
-
-DROP POLICY IF EXISTS "audit_logs_no_update" ON public.audit_logs;
-CREATE POLICY "audit_logs_no_update" ON public.audit_logs
-  FOR UPDATE TO anon, authenticated
-  USING (false);
-
-DROP POLICY IF EXISTS "audit_logs_delete_policy" ON public.audit_logs;
-CREATE POLICY "audit_logs_delete_policy" ON public.audit_logs
-  FOR DELETE TO anon, authenticated
-  USING (true);
-
--- 14. API EXPOSURE GRANTS
-GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
-
--- 15. SEED MASTER DATA: SYSTEM OPTIONS ONLY (No Mockup Contracts/Periods)
-INSERT INTO public.system_options (category, label, value, sort_order, is_default) VALUES
-  -- คำนำหน้าชื่อ (Titles)
-  ('title', 'นาย', 'นาย', 1, true),
-  ('title', 'นาง', 'นาง', 2, false),
-  ('title', 'นางสาว', 'นางสาว', 3, false),
-  ('title', 'ว่าที่ร้อยตรี', 'ว่าที่ร้อยตรี', 4, false),
-  ('title', 'ดร.', 'ดร.', 5, false),
-
-  -- ตำแหน่งงานตามสัญญา (Positions)
-  ('position', 'จ้างเหมาบริการปฏิบัติงานเครื่องคอมพิวเตอร์', 'จ้างเหมาบริการปฏิบัติงานเครื่องคอมพิวเตอร์', 1, true),
-  ('position', 'เจ้าหน้าที่ธุรการ', 'เจ้าหน้าที่ธุรการ', 2, false),
-  ('position', 'นักวิชาการสาธารณสุข', 'นักวิชาการสาธารณสุข', 3, false),
-  ('position', 'เจ้าพนักงานการเงินและบัญชี', 'เจ้าพนักงานการเงินและบัญชี', 4, false),
-  ('position', 'เจ้าพนักงานพัสดุ', 'เจ้าพนักงานพัสดุ', 5, false),
-
-  -- ส่วนราชการที่ปฏิบัติงาน (Agencies)
-  ('agency', 'วิทยาลัยนักบริหารสาธารณสุข', 'วิทยาลัยนักบริหารสาธารณสุข', 1, true),
-  ('agency', 'สำนักงานปลัดกระทรวงสาธารณสุข', 'สำนักงานปลัดกระทรวงสาธารณสุข', 2, false),
-  ('agency', 'กรมการแพทย์', 'กรมการแพทย์', 3, false),
-  ('agency', 'กรมควบคุมโรค', 'กรมควบคุมโรค', 4, false),
-  ('agency', 'สำนักงานสาธารณสุขจังหวัดเพชรบุรี', 'สำนักงานสาธารณสุขจังหวัดเพชรบุรี', 5, false),
-
-  -- หน่วยงานผู้เบิกจ่าย (Payer Agencies)
-  ('payer_agency', 'กองบริหารการคลัง สำนักงานปลัดกระทรวงสาธารณสุข', 'กองบริหารการคลัง สำนักงานปลัดกระทรวงสาธารณสุข', 1, true),
-  ('payer_agency', 'สำนักงานสาธารณสุขจังหวัดเพชรบุรี', 'สำนักงานสาธารณสุขจังหวัดเพชรบุรี', 2, false),
-  ('payer_agency', 'กลุ่มการคลังและพัสดุ', 'กลุ่มการคลังและพัสดุ', 3, false),
-
-  -- ธนาคาร (Banks)
-  ('bank', 'ธนาคารกรุงไทย', 'ธนาคารกรุงไทย', 1, true),
-  ('bank', 'ธนาคารออมสิน', 'ธนาคารออมสิน', 2, false),
-  ('bank', 'ธนาคารกสิกรไทย', 'ธนาคารกสิกรไทย', 3, false),
-  ('bank', 'ธนาคารไทยพาณิชย์', 'ธนาคารไทยพาณิชย์', 4, false),
-  ('bank', 'ธนาคารกรุงเทพ', 'ธนาคารกรุงเทพ', 5, false),
-
-  -- ประเภทการลา (Leave Types)
-  ('leave_type', 'ลาป่วย', 'sick', 1, true),
-  ('leave_type', 'ลากิจส่วนตัว', 'personal', 2, false),
-  ('leave_type', 'ขาดงาน/ไม่มาปฏิบัติงาน', 'absent', 3, false);
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  REVOKE ALL ON TABLES FROM PUBLIC, anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM PUBLIC, anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon, authenticated;

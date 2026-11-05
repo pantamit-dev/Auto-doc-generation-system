@@ -1,175 +1,44 @@
-# Deployment Guide — salary-doc-web
-
-> คู่มือ deploy โครงการบน Vercel เชื่อมต่อกับ Supabase
-
+---
+title: Deploy to Vercel
+contentType: How-to
+goal: Configure and verify a Vercel deployment
+audience: Deployment maintainers
+overview: Vercel project setup, environment variables, and post-deploy checks
+contentPlan: Configure the project, provision secrets, deploy, and validate routes
+openQuestions: []
 ---
 
-## 🏗️ โครงสร้าง Infrastructure
+# Deploy to Vercel
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    Vercel                           │
-│   ┌─────────────────┐   ┌─────────────────────┐   │
-│   │  Next.js App    │   │  Edge / Serverless  │   │
-│   │  (Static + SSR) │   │  Functions (API)    │   │
-│   └────────┬────────┘   └──────────┬──────────┘   │
-└────────────┼─────────────────────────────────────── ┘
-             │ HTTPS                 │ Supabase Client
-             ▼                       ▼
-     ┌───────────────┐    ┌─────────────────────┐
-     │  User Browser │    │      Supabase       │
-     └───────────────┘    │  (PostgreSQL + Auth)│
-                          └─────────────────────┘
-```
+Use this guide to deploy the Next.js app from the repository root. Add environment variables before the first production build.
 
----
+## Configure the Vercel project
 
-## 🚀 การ Deploy ครั้งแรก
+1. Import the GitHub repository connected to this application.
+2. Select the repository root as the Root Directory.
+3. Keep the Next.js framework preset and default output settings.
+4. Use `npm install` and `npm run build`.
+5. Add the environment variables listed in [environment setup](./environment-setup.md).
 
-### ขั้นที่ 1: เตรียม Vercel Account
+The public Supabase URL and key are client configuration. Store `SUPABASE_SERVICE_ROLE_KEY` and `SESSION_SECRET` as server-side environment variables. Never add either secret to a `NEXT_PUBLIC_` variable.
 
-1. ไปที่ [https://vercel.com](https://vercel.com)
-2. Sign in ด้วย GitHub account
-3. Import repository `Salary_Doc_app`
+## Configure the Supabase project
 
-### ขั้นที่ 2: ตั้งค่า Project
+For a new, empty project, run only `supabase/manual-setup/initial-schema.sql` in the Supabase SQL Editor. The script creates tables, indexes, triggers, and RLS settings without inserting rows. Review [database setup](../database/schema.md) before running it.
 
-ใน Vercel Dashboard ระหว่าง import:
+The files in `supabase/migrations/` include older policies, seed data, and destructive data changes. Do not run the migration directory as a batch or use `supabase db push` for initial production setup.
 
-| Setting | ค่า |
-|---|---|
-| Framework Preset | Next.js |
-| Root Directory | `salary-doc-web` |
-| Build Command | `npm run build` |
-| Output Directory | `.next` (auto-detect) |
-| Install Command | `npm install` |
+## Deploy and verify
 
-### ขั้นที่ 3: เพิ่ม Environment Variables
+Deploy from the Vercel dashboard or use the configured Git integration. After deployment:
 
-ก่อน deploy ต้องใส่ ENV vars (ดูรายละเอียดที่ [environment-setup.md](./environment-setup.md)):
+- Confirm the home page and authentication pages load.
+- Send a non-sensitive test request to `POST /api/calculate`.
+- Check Vercel function logs for errors without printing tokens or personal data.
+- Verify Supabase table access and RLS with a test project and test account.
 
-```
-NEXT_PUBLIC_SUPABASE_URL     = https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY = eyJ...
-```
+The secure database script intentionally blocks browser-role CRUD. The current browser adapter is not yet compatible with those grants. Keep production personal data disabled until its database operations use authenticated server routes and pass authorization tests.
 
-### ขั้นที่ 4: Deploy
+## Change environment variables
 
-```powershell
-# หรือ deploy ผ่าน CLI
-npx vercel --prod
-```
-
----
-
-## 📄 vercel.json Configuration
-
-ไฟล์ `vercel.json` ที่ root ของโปรเจค:
-
-```json
-{
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key"
-  }
-}
-```
-
-> [!NOTE]
-> `@variable_name` หมายถึง Vercel Secret ที่ตั้งค่าผ่าน Dashboard
-
----
-
-## 🔄 การ Deploy อัตโนมัติ (CI/CD)
-
-Vercel จะ deploy อัตโนมัติเมื่อ:
-
-| Branch | Environment | URL |
-|---|---|---|
-| `main` | Production | `https://salary-doc-web.vercel.app` |
-| `develop` | Preview | `https://salary-doc-web-git-develop-xxx.vercel.app` |
-| PR branches | Preview | Auto-generated URL |
-
----
-
-## 🗄️ Database Migration บน Production
-
-### วิธีที่แนะนำ: Supabase Dashboard SQL Editor
-
-1. เปิด Supabase Dashboard → SQL Editor
-2. Paste เนื้อหา `supabase/migrations/20261102000000_init_schema.sql`
-3. กด **Run**
-
-### วิธีที่ 2: Supabase CLI (ถ้า link project แล้ว)
-
-```powershell
-supabase db push
-```
-
-> [!WARNING]
-> การรัน migration ซ้ำบน production database ที่มีข้อมูลอยู่แล้ว  
-> ควรตรวจสอบว่า migration ใช้ `IF NOT EXISTS` และ `ON CONFLICT DO NOTHING`
-
----
-
-## 🔍 ตรวจสอบหลัง Deploy
-
-### Checklist หลัง Production Deploy
-
-- [ ] เปิด URL หน้าแรก ต้อง load ได้ปกติ
-- [ ] ทดสอบ `/auth/login` — form แสดงถูกต้อง
-- [ ] ทดสอบ POST `/api/calculate` ด้วย curl หรือ Postman
-- [ ] ตรวจสอบ Vercel Function Logs ว่าไม่มี error
-
-```powershell
-# ทดสอบ API หลัง deploy
-curl -X POST https://salary-doc-web.vercel.app/api/calculate `
-  -H "Content-Type: application/json" `
-  -d '{"startDate":"2026-10-01","endDate":"2027-09-30","monthlyWage":19800}'
-```
-
-### ดู Vercel Logs
-
-```powershell
-npx vercel logs salary-doc-web --follow
-```
-
----
-
-## ♻️ Rollback
-
-หาก production มีปัญหา:
-
-### ผ่าน Vercel Dashboard
-1. ไปที่ project → **Deployments**
-2. เลือก deployment ที่ stable
-3. กด **Promote to Production**
-
-### ผ่าน CLI
-```powershell
-npx vercel rollback
-```
-
----
-
-## 🌍 Custom Domain (ถ้ามี)
-
-```powershell
-# เพิ่ม custom domain
-npx vercel domains add yourdomain.com
-
-# ตรวจสอบ DNS
-npx vercel domains inspect yourdomain.com
-```
-
----
-
-## 📊 Performance Tips
-
-1. **Image Optimization** — ใช้ `<Image>` จาก `next/image` แทน `<img>` ทั่วไป
-2. **Font Loading** — ใช้ `next/font` เพื่อโหลด TH Sarabun
-3. **Code Splitting** — Next.js จัดการให้อัตโนมัติ
-4. **Caching** — กำหนด `cache: 'force-cache'` สำหรับ static data
+After adding or changing an environment variable, redeploy the affected Vercel environment. Keep Preview and Production credentials separated when they target different Supabase projects.
